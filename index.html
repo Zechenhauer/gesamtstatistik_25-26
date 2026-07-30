@@ -42,7 +42,7 @@
         border-radius: 25px; outline: none; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15); text-align: center;
     }
 
-    /* Layout Card Grid */
+    /* Layout Grid */
     .team-overview-card {
         background-color: #1e293b; border: 2px solid #f59e0b; border-radius: 12px;
         padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 25px;
@@ -84,6 +84,7 @@
     .loss-text { color: #f87171; font-weight: bold; }
     .rate-badge { background-color: #334155; color: #facc15; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
 
+    /* Farblich gestaltete Spalten für Scoring */
     .col-60 { color: #f97316 !important; background-color: rgba(249, 115, 22, 0.1); font-weight: bold; }
     .col-80 { color: #facc15 !important; background-color: rgba(250, 204, 21, 0.1); font-weight: bold; }
     .col-100 { color: #4ade80 !important; background-color: rgba(74, 222, 128, 0.1); font-weight: bold; }
@@ -202,7 +203,7 @@
                 </table>
             </div>
 
-            <!-- DOPPEL-BILANZ KACHEL (PAARUNGEN) -->
+            <!-- Doppel-Bilanz Kachel (Paarungen) -->
             <div class="premium-card">
                 <div class="card-header-title">
                     <h2>👥 DOPPEL-PAARUNGEN</h2>
@@ -300,33 +301,39 @@
         const rows = parseCSV(csvText).slice(1);
 
         rows.forEach(row => {
-            const spielerKapellen = row[5] || "";
-            const ergebnis = row[8] || "";
-            const dartsString = row[9] || "";
-            const hunderteachtzigerRaw = row[11] || "";
-            const hfString = row[12] || "";
+            const spielerKapellen = row[5] || "";                     // Spalte F: Spieler
+            const ergebnis = row[7] ? row[7].toString().trim() : "";     // Spalte H: Ergebnis Spiel (Index 7)
+            const dartsString = row[9] || "";                        // Spalte J: Darts (Short Legs)
+            const hunderteachtzigerRaw = row[11] || "";               // Spalte L: 180er
+            const hfString = row[12] || "";                          // Spalte M: High Finish
 
-            const s60 = parseInt(row[13]) || 0;
-            const s80 = parseInt(row[14]) || 0;
-            const s100 = parseInt(row[15]) || 0;
-            const s140 = parseInt(row[16]) || 0;
+            const s60 = parseInt(row[13]) || 0;                       // Spalte N: 60+
+            const s80 = parseInt(row[14]) || 0;                       // Spalte O: 80+
+            const s100 = parseInt(row[15]) || 0;                      // Spalte P: 100+
+            const s140 = parseInt(row[16]) || 0;                      // Spalte Q: 140+
 
             if (!spielerKapellen) return;
 
             let wins = 0;
             let losses = 0;
+
+            // Ergebnisauswertung basierend auf Spalte H (z. B. "3:1")
             if (ergebnis.includes(":")) {
                 let parts = ergebnis.split(":");
-                let kapellenScore = parseInt(parts[0]);
-                let gegnerScore = parseInt(parts[1]);
+                let kapellenScore = parseFloat(parts[0].replace(",", "."));
+                let gegnerScore = parseFloat(parts[1].replace(",", "."));
+                
                 if (!isNaN(kapellenScore) && !isNaN(gegnerScore)) {
                     if (kapellenScore > gegnerScore) wins = 1;
                     else if (gegnerScore > kapellenScore) losses = 1;
                 }
-            } else if (ergebnis === "1" || ergebnis.toLowerCase() === "s") {
-                wins = 1;
-            } else if (ergebnis === "0" || ergebnis.toLowerCase() === "n") {
-                losses = 1;
+            } else {
+                let ergLower = ergebnis.toLowerCase();
+                if (ergLower === "1" || ergLower === "s" || ergLower.includes("sieg")) {
+                    wins = 1;
+                } else if (ergLower === "0" || ergLower === "n" || ergLower.includes("niederlage")) {
+                    losses = 1;
+                }
             }
 
             let currentShortLegs = [];
@@ -356,9 +363,8 @@
 
             let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
 
-            // DOPPEL-PAARUNG VERARBEITEN (wenn >= 2 Spieler)
+            // DOPPEL-PAARUNGEN
             if (playerList.length >= 2) {
-                // Sortieren für einheitlichen Key (egal wer zuerst eingetragen ist)
                 let pairSorted = [...playerList].sort();
                 let pairKey = pairSorted.join(" / ");
 
@@ -375,7 +381,7 @@
                 doublePairings[pairKey].losses += losses;
             }
 
-            // EINZEL & PERSONEN-STATS VERARBEITEN
+            // EINZEL & PERSONEN-STATS
             playerList.forEach(pName => {
                 if (!globalPlayers[pName]) {
                     globalPlayers[pName] = {
@@ -393,6 +399,7 @@
 
                 let pObj = globalPlayers[pName];
 
+                // Nur bei Einzel-Spielen zur Einzel-Bilanz hinzufügen
                 if (playerList.length === 1) {
                     pObj.singleWins += wins;
                     pObj.singleLosses += losses;
@@ -513,7 +520,6 @@
         });
     }
 
-    /* NEU: Rendert konkrete Doppel-Paarungen */
     function renderDoublePairingsTable(pairings) {
         let sorted = Object.values(pairings).map(p => {
             let total = p.wins + p.losses;
