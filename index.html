@@ -336,55 +336,66 @@
 
     function parseAndAggregateTeam(source, csvText, globalPlayers, doublePairings, teamTotals) {
         const rows = parseCSV(csvText).slice(1);
+        
+        // Set zur Nachverfolgung bereits gezählter Mannschafts-Begegnungen
+        let countedMatches = new Set();
 
         rows.forEach(row => {
-            const spielerKapellen = row[5] || "";                     // Spalte F: Spieler
-            const ergebnis = row[7] ? row[7].toString().trim() : "";     // Spalte H: Ergebnis
-            const dartsString = row[9] || "";                        // Spalte J: Darts
-            const hunderteachtzigerRaw = row[11] || "";               // Spalte L: 180er
-            const hfString = row[12] || "";                          // Spalte M: High Finish
+            const spieltag = row[0] || "";                          // Spalte A: Spieltag
+            const datum = row[1] || "";                             // Spalte B: Datum
+            const gegner = row[2] || "";                            // Spalte C: Gegner Mannschaft
+            const endergebnis = row[3] ? row[3].toString().trim() : ""; // Spalte D: Endergebnis (z.B. 15:5)
+            
+            const spielerKapellen = row[5] || "";                  // Spalte F: Spieler Kapellen
+            const ergebnisSpiel = row[7] ? row[7].toString().trim() : ""; // Spalte H: Ergebnis Spiel (z.B. 3:1)
+            const dartsString = row[9] || "";                      // Spalte J: Darts
+            const hunderteachtzigerRaw = row[11] || "";             // Spalte L: 180er
+            const hfString = row[12] || "";                        // Spalte M: HF
 
-            const s60 = parseInt(row[13]) || 0;                       // Spalte N: 60+
-            const s80 = parseInt(row[14]) || 0;                       // Spalte O: 80+
-            const s100 = parseInt(row[15]) || 0;                      // Spalte P: 100+
-            const s140 = parseInt(row[16]) || 0;                      // Spalte Q: 140+
+            const s60 = parseInt(row[13]) || 0;                     // Spalte N: 60+
+            const s80 = parseInt(row[14]) || 0;                     // Spalte O: 80+
+            const s100 = parseInt(row[15]) || 0;                    // Spalte P: 100+
+            const s140 = parseInt(row[16]) || 0;                    // Spalte Q: 140+
 
-            if (!spielerKapellen) return;
-
-            let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
-
-            // Auswertung des Spielstandes
-            let scoreKapellen = 0;
-            let scoreGegner = 0;
-            let isWin = false;
-            let isDraw = false;
-            let isLoss = false;
-
-            if (ergebnis.includes(":")) {
-                let parts = ergebnis.split(":");
-                scoreKapellen = parseFloat(parts[0].replace(",", "."));
-                scoreGegner = parseFloat(parts[1].replace(",", "."));
+            // 1. MANNSCHAFTS-ERGEBNIS ZÄHLEN (NUR 1-MAL PRO SPIELTAG/BEGEGNUNG)
+            if (endergebnis && endergebnis.includes(":")) {
+                let matchKey = `${spieltag}_${datum}_${gegner}_${endergebnis}`;
                 
-                if (!isNaN(scoreKapellen) && !isNaN(scoreGegner)) {
-                    if (scoreKapellen > scoreGegner) isWin = true;
-                    else if (scoreKapellen < scoreGegner) isLoss = true;
-                    else isDraw = true; // Unentschieden (z. B. 10:10)
-                }
-            } else {
-                let ergLower = ergebnis.toLowerCase();
-                if (ergLower === "1" || ergLower === "s" || ergLower.includes("sieg")) {
-                    isWin = true;
-                } else if (ergLower === "u" || ergLower.includes("unentschieden") || ergLower.includes("remis")) {
-                    isDraw = true;
-                } else if (ergLower === "0" || ergLower === "n" || ergLower.includes("niederlage")) {
-                    isLoss = true;
+                if (!countedMatches.has(matchKey)) {
+                    countedMatches.add(matchKey);
+
+                    let parts = endergebnis.split(":");
+                    let scoreKapellen = parseFloat(parts[0].replace(",", "."));
+                    let scoreGegner = parseFloat(parts[1].replace(",", "."));
+                    
+                    if (!isNaN(scoreKapellen) && !isNaN(scoreGegner)) {
+                        if (scoreKapellen > scoreGegner) {
+                            teamTotals.wins += 1;
+                        } else if (scoreKapellen < scoreGegner) {
+                            teamTotals.losses += 1;
+                        } else {
+                            teamTotals.draws += 1; // Unentschieden (z. B. 10:10)
+                        }
+                    }
                 }
             }
 
-            // Gesamtergebnis als 1 Mannschafts-Sieg / -Unentschieden / -Niederlage zählen
-            if (isWin) teamTotals.wins += 1;
-            else if (isDraw) teamTotals.draws += 1;
-            else if (isLoss) teamTotals.losses += 1;
+            if (!spielerKapellen) return;
+            let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
+
+            // 2. EINZEL-/DOPPEL-SIEG ODER -NIEDERLAGE BESTIMMEN (aus Spalte H "Ergebnis Spiel")
+            let isSingleWin = false;
+            let isSingleLoss = false;
+
+            if (ergebnisSpiel.includes(":")) {
+                let parts = ergebnisSpiel.split(":");
+                let scoreK = parseFloat(parts[0].replace(",", "."));
+                let scoreG = parseFloat(parts[1].replace(",", "."));
+                if (!isNaN(scoreK) && !isNaN(scoreG)) {
+                    if (scoreK > scoreG) isSingleWin = true;
+                    else if (scoreK < scoreG) isSingleLoss = true;
+                }
+            }
 
             // DOPPEL-PAARUNGEN
             if (playerList.length >= 2) {
@@ -400,13 +411,13 @@
                         losses: 0
                     };
                 }
-                if (isWin) doublePairings[pairKey].wins += 1;
-                if (isLoss) doublePairings[pairKey].losses += 1;
+                if (isSingleWin) doublePairings[pairKey].wins += 1;
+                if (isSingleLoss) doublePairings[pairKey].losses += 1;
                 
                 return; 
             }
 
-            // EINZEL-SPIELER & SCORING IM MANNSCHAFTS-VERGLEICH
+            // EINZEL-SPIELER & SCORING
             if (playerList.length === 1) {
                 let currentShortLegs = [];
                 if (dartsString) {
@@ -426,7 +437,7 @@
                     }
                 }
 
-                // Scoring-Summen für den Mannschafts-Vergleich
+                // High-Scores für das Team aufsummieren
                 teamTotals.s180 += match180Count;
                 teamTotals.shortLegsCount += currentShortLegs.length;
                 teamTotals.s60 += s60;
@@ -434,9 +445,8 @@
                 teamTotals.s100 += s100;
                 teamTotals.s140 += s140;
 
-                // Einzel-Spieler-Statistiken aktualisieren
+                // Einzel-Spieler-Statistik
                 let pName = playerList[0];
-
                 if (!globalPlayers[pName]) {
                     globalPlayers[pName] = {
                         name: pName,
@@ -452,9 +462,9 @@
                 }
 
                 let pObj = globalPlayers[pName];
-
-                if (isWin) pObj.singleWins += 1;
-                if (isLoss) pObj.singleLosses += 1;
+                if (isSingleWin) pObj.singleWins += 1;
+                if (isSingleLoss) pObj.singleLosses += 1;
+                
                 pObj.s60 += s60;
                 pObj.s80 += s80;
                 pObj.s100 += s100;
