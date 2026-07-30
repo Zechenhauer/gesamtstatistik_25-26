@@ -122,7 +122,7 @@
         <div class="team-overview-card" id="teamCard" style="display:none;">
             <div class="card-header-title">
                 <h2>🎯 MANNSCHAFTS-VERGLEICH</h2>
-                <div class="subtitle">GESAMT-LEISTUNG DER TEAMS IM ÜBERBLICK</div>
+                <div class="subtitle">EINZEL-LEISTUNG DER TEAMS IM ÜBERBLICK</div>
             </div>
             <table class="data-table">
                 <thead>
@@ -146,7 +146,7 @@
             <div class="premium-card">
                 <div class="card-header-title">
                     <h2>🏆 SAISON-HIGHLIGHTS</h2>
-                    <div class="subtitle">BESTLEISTUNGEN</div>
+                    <div class="subtitle">BESTLEISTUNGEN (EINZEL)</div>
                 </div>
                 <table class="data-table">
                     <thead>
@@ -166,7 +166,7 @@
             <div class="premium-card">
                 <div class="card-header-title">
                     <h2>🎯 SCORING-STATS</h2>
-                    <div class="subtitle">HIGH-SCORES</div>
+                    <div class="subtitle">HIGH-SCORES (EINZEL)</div>
                 </div>
                 <table class="data-table">
                     <thead>
@@ -203,11 +203,11 @@
                 </table>
             </div>
 
-            <!-- Doppel-Bilanz Kachel (Paarungen) -->
+            <!-- Doppel-Statistik Kachel -->
             <div class="premium-card">
                 <div class="card-header-title">
-                    <h2>👥 DOPPEL-PAARUNGEN</h2>
-                    <div class="subtitle">TEAM-BILANZEN (WER MIT WEM)</div>
+                    <h2>👥 DOPPEL-STATISTIK</h2>
+                    <div class="subtitle">ALLE PAARUNGEN (SIEGE, NIEDERLAGEN & QUOTE)</div>
                 </div>
                 <table class="data-table">
                     <thead>
@@ -302,8 +302,8 @@
 
         rows.forEach(row => {
             const spielerKapellen = row[5] || "";                     // Spalte F: Spieler
-            const ergebnis = row[7] ? row[7].toString().trim() : "";     // Spalte H: Ergebnis Spiel (Index 7)
-            const dartsString = row[9] || "";                        // Spalte J: Darts (Short Legs)
+            const ergebnis = row[7] ? row[7].toString().trim() : "";     // Spalte H: Ergebnis Spiel
+            const dartsString = row[9] || "";                        // Spalte J: Darts
             const hunderteachtzigerRaw = row[11] || "";               // Spalte L: 180er
             const hfString = row[12] || "";                          // Spalte M: High Finish
 
@@ -314,10 +314,11 @@
 
             if (!spielerKapellen) return;
 
+            let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
+
             let wins = 0;
             let losses = 0;
 
-            // Ergebnisauswertung basierend auf Spalte H (z. B. "3:1")
             if (ergebnis.includes(":")) {
                 let parts = ergebnis.split(":");
                 let kapellenScore = parseFloat(parts[0].replace(",", "."));
@@ -336,34 +337,7 @@
                 }
             }
 
-            let currentShortLegs = [];
-            if (dartsString) {
-                dartsString.split(/[,|\/-]/).forEach(d => {
-                    let dNum = parseInt(d.trim());
-                    if (dNum && dNum <= 18) currentShortLegs.push(dNum);
-                });
-            }
-
-            let match180Count = 0;
-            if (hunderteachtzigerRaw.trim() !== "") {
-                let matchesNumbers = hunderteachtzigerRaw.match(/\d+/g);
-                if (matchesNumbers) {
-                    match180Count = matchesNumbers.reduce((acc, curr) => acc + parseInt(curr), 0);
-                } else {
-                    match180Count = hunderteachtzigerRaw.split(/[,|\/]/).filter(s => s.trim().length > 0).length;
-                }
-            }
-
-            teamTotals.s180 += match180Count;
-            teamTotals.shortLegsCount += currentShortLegs.length;
-            teamTotals.s60 += s60;
-            teamTotals.s80 += s80;
-            teamTotals.s100 += s100;
-            teamTotals.s140 += s140;
-
-            let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
-
-            // DOPPEL-PAARUNGEN
+            // DOPPEL-PAARUNGEN (Nur wenn >= 2 Spieler eingetragen sind)
             if (playerList.length >= 2) {
                 let pairSorted = [...playerList].sort();
                 let pairKey = pairSorted.join(" / ");
@@ -379,10 +353,42 @@
                 }
                 doublePairings[pairKey].wins += wins;
                 doublePairings[pairKey].losses += losses;
+                
+                // STRIKTER ABBRUCH: Doppel fließen WEDER in den Mannschafts-Vergleich NOCH in Einzel-Kacheln ein!
+                return; 
             }
 
-            // EINZEL & PERSONEN-STATS
-            playerList.forEach(pName => {
+            // EINZEL-SPIELER & MANNSCHAFTS-VERGLEICH (Nur für echte Einzelmatches)
+            if (playerList.length === 1) {
+                let currentShortLegs = [];
+                if (dartsString) {
+                    dartsString.split(/[,|\/-]/).forEach(d => {
+                        let dNum = parseInt(d.trim());
+                        if (dNum && dNum <= 18) currentShortLegs.push(dNum);
+                    });
+                }
+
+                let match180Count = 0;
+                if (hunderteachtzigerRaw.trim() !== "") {
+                    let matchesNumbers = hunderteachtzigerRaw.match(/\d+/g);
+                    if (matchesNumbers) {
+                        match180Count = matchesNumbers.reduce((acc, curr) => acc + parseInt(curr), 0);
+                    } else {
+                        match180Count = hunderteachtzigerRaw.split(/[,|\/]/).filter(s => s.trim().length > 0).length;
+                    }
+                }
+
+                // 1. Mannschafts-Vergleich aktualisieren (nur Einzel)
+                teamTotals.s180 += match180Count;
+                teamTotals.shortLegsCount += currentShortLegs.length;
+                teamTotals.s60 += s60;
+                teamTotals.s80 += s80;
+                teamTotals.s100 += s100;
+                teamTotals.s140 += s140;
+
+                // 2. Einzel-Spieler-Statistiken aktualisieren
+                let pName = playerList[0];
+
                 if (!globalPlayers[pName]) {
                     globalPlayers[pName] = {
                         name: pName,
@@ -399,12 +405,8 @@
 
                 let pObj = globalPlayers[pName];
 
-                // Nur bei Einzel-Spielen zur Einzel-Bilanz hinzufügen
-                if (playerList.length === 1) {
-                    pObj.singleWins += wins;
-                    pObj.singleLosses += losses;
-                }
-
+                pObj.singleWins += wins;
+                pObj.singleLosses += losses;
                 pObj.s60 += s60;
                 pObj.s80 += s80;
                 pObj.s100 += s100;
@@ -418,20 +420,8 @@
                     });
                 }
 
-                if (hunderteachtzigerRaw) {
-                    if (playerList.length > 1) {
-                        let pLast = pName.split(" ").pop().toLowerCase();
-                        if (hunderteachtzigerRaw.toLowerCase().includes(pLast)) {
-                            let mNum = hunderteachtzigerRaw.match(new RegExp(pLast + "\\s*(\\d+)", "i"));
-                            pObj.hunderteachtziger += mNum ? parseInt(mNum[1]) : 1;
-                        } else if (!isNaN(parseInt(hunderteachtzigerRaw))) {
-                            pObj.hunderteachtziger += parseInt(hunderteachtzigerRaw);
-                        }
-                    } else {
-                        pObj.hunderteachtziger += match180Count;
-                    }
-                }
-            });
+                pObj.hunderteachtziger += match180Count;
+            }
         });
     }
 
@@ -457,7 +447,9 @@
     }
 
     function renderHighlightsTable(players) {
-        let sorted = Object.values(players).sort((a, b) => 
+        let sorted = Object.values(players).filter(p => 
+            p.hunderteachtziger > 0 || p.shortLegsArray.length > 0 || p.topFinish > 0
+        ).sort((a, b) => 
             b.hunderteachtziger - a.hunderteachtziger || 
             b.shortLegsArray.length - a.shortLegsArray.length || 
             b.topFinish - a.topFinish
@@ -465,6 +457,11 @@
 
         let tbody = document.getElementById("highlightsTableBody");
         tbody.innerHTML = "";
+
+        if (sorted.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b;">Keine Einzel-Highlights vorhanden</td></tr>`;
+            return;
+        }
 
         sorted.forEach((p, idx) => {
             let topFinishDisplay = p.topFinish > 0 
@@ -492,7 +489,7 @@
     }
 
     function renderSingleWinLossTable(players) {
-        let sorted = Object.values(players).map(p => {
+        let sorted = Object.values(players).filter(p => (p.singleWins + p.singleLosses) > 0).map(p => {
             let total = p.singleWins + p.singleLosses;
             let rate = total > 0 ? Math.round((p.singleWins / total) * 100) : 0;
             return { ...p, totalMatches: total, winRate: rate };
@@ -500,6 +497,11 @@
 
         let tbody = document.getElementById("singleWinLossTableBody");
         tbody.innerHTML = "";
+
+        if (sorted.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b;">Keine Einzel-Spiele vorhanden</td></tr>`;
+            return;
+        }
 
         sorted.forEach((p, idx) => {
             let rateDisplay = p.totalMatches > 0 
@@ -521,14 +523,24 @@
     }
 
     function renderDoublePairingsTable(pairings) {
+        // Sortierung: 1. Anzahl der Spiele (totalMatches), 2. Siege (wins), 3. Gewinnquote (winRate)
         let sorted = Object.values(pairings).map(p => {
             let total = p.wins + p.losses;
             let rate = total > 0 ? Math.round((p.wins / total) * 100) : 0;
             return { ...p, totalMatches: total, winRate: rate };
-        }).sort((a, b) => b.totalMatches - a.totalMatches || b.wins - a.wins || b.winRate - a.winRate);
+        }).sort((a, b) => 
+            b.totalMatches - a.totalMatches || 
+            b.wins - a.wins || 
+            b.winRate - a.winRate
+        );
 
         let tbody = document.getElementById("doublePairingTableBody");
         tbody.innerHTML = "";
+
+        if (sorted.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b;">Keine Doppel-Spiele vorhanden</td></tr>`;
+            return;
+        }
 
         sorted.forEach((p, idx) => {
             let rateDisplay = p.totalMatches > 0 
@@ -553,10 +565,15 @@
         let sorted = Object.values(players).map(p => ({
             ...p,
             totalScoring: p.s60 + p.s80 + p.s100 + p.s140
-        })).sort((a, b) => b.totalScoring - a.totalScoring || b.s140 - a.s140);
+        })).filter(p => p.totalScoring > 0).sort((a, b) => b.totalScoring - a.totalScoring || b.s140 - a.s140);
 
         let tbody = document.getElementById("scoringTableBody");
         tbody.innerHTML = "";
+
+        if (sorted.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b;">Keine Einzel-Scoring-Daten vorhanden</td></tr>`;
+            return;
+        }
 
         sorted.forEach((p, idx) => {
             let display140 = p.s140 > 0 
