@@ -28,7 +28,7 @@
     /* Suche & Dropdown Filter Header */
     .search-wrapper {
         position: sticky; top: 15px; z-index: 90; margin-bottom: 25px; 
-        display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
+        display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
     }
     .filter-select-box {
         padding: 12px 20px; font-size: 14px; font-weight: bold;
@@ -42,18 +42,21 @@
         border-radius: 25px; outline: none; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15); text-align: center;
     }
 
-    /* Layout Grid */
+    /* Layout Cards */
     .team-overview-card {
         background-color: #1e293b; border: 2px solid #f59e0b; border-radius: 12px;
         padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 25px;
     }
 
-    .dashboard-grid {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 35px;
+    /* Tabelle in der Team-Card horizontal scrollbar auf Handy */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    @media (max-width: 1000px) {
-        .dashboard-grid { grid-template-columns: 1fr; }
+    .dashboard-grid {
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 35px;
     }
 
     /* Kacheln & Scrollbereiche */
@@ -74,21 +77,23 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         color: #94a3b8; 
         text-align: left; 
-        padding: 10px 4px; 
-        font-size: 10px; 
+        padding: 10px 6px; 
+        font-size: 11px; 
         text-transform: uppercase; 
         letter-spacing: 0.5px; 
+        white-space: nowrap;
     }
 
-    /* Design des Scrollbalkens */
-    .premium-card::-webkit-scrollbar {
+    /* Design der Scrollbalken */
+    .premium-card::-webkit-scrollbar, .table-responsive::-webkit-scrollbar {
         width: 6px;
+        height: 6px;
     }
-    .premium-card::-webkit-scrollbar-track {
+    .premium-card::-webkit-scrollbar-track, .table-responsive::-webkit-scrollbar-track {
         background: #0f172a;
         border-radius: 4px;
     }
-    .premium-card::-webkit-scrollbar-thumb {
+    .premium-card::-webkit-scrollbar-thumb, .table-responsive::-webkit-scrollbar-thumb {
         background: #f59e0b;
         border-radius: 4px;
     }
@@ -98,7 +103,7 @@
     .card-header-title .subtitle { color: #34d399; font-size: 11px; font-weight: bold; margin-top: 3px; letter-spacing: 0.5px; }
 
     .data-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-    .data-table td { padding: 8px 4px; border-bottom: 1px solid #334155; font-size: 12px; }
+    .data-table td { padding: 8px 6px; border-bottom: 1px solid #334155; font-size: 12px; white-space: nowrap; }
 
     /* Team Badges */
     .team-tag {
@@ -124,14 +129,40 @@
 
     .badge-140 { background-color: #0284c7; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
     .row-matched { background-color: rgba(245, 158, 11, 0.2) !important; }
+
+    /* OPTIMIERUNG FÜR SMARTPHONES / MOBILGERÄTE */
+    @media (max-width: 768px) {
+        body { padding: 12px 8px; }
+        .app-main-header h1 { font-size: 22px; }
+        .app-main-header .app-subtitle { font-size: 12px; }
+        
+        .team-overview-card, .premium-card { padding: 12px 8px; }
+        .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
+        
+        .card-header-title h2 { font-size: 14px; }
+        .card-header-title .subtitle { font-size: 10px; }
+
+        .data-table th { padding: 6px 4px; font-size: 9px; }
+        .data-table td { padding: 6px 4px; font-size: 11px; }
+
+        .filter-select-box, .search-box-input { font-size: 12px; padding: 10px 16px; }
+        
+        /* Sichtbare Anzeige bei gekürzten Texten */
+        .hide-on-mobile { display: none; }
+        .show-on-mobile { display: inline-block; }
+    }
+
+    @media (min-width: 769px) {
+        .show-on-mobile { display: none; }
+    }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Hauptüberschrift -->
         <div class="app-main-header">
-            <h1>TV KAPELLEN 1919 e.V.</h1>
-            <div class="app-subtitle">Gesamtstatistik — Alle Mannschaften</div>
+            <h1>TV KAPELLEN 1919 E.V.</h1>
+            <div class="app-subtitle">TV Gesamtstatistik — Alle Mannschaften</div>
             <div class="app-sync-info">⚡ Synchronisiert wird die Seite von Jürgen Schützendorf</div>
         </div>
 
@@ -145,7 +176,7 @@
                 <option value="TVK 4">TV Kapellen 4</option>
             </select>
 
-            <input type="text" id="playerSearchInput" class="search-box-input" placeholder="🔍 Nach Spieler oder Doppel suchen..." oninput="performLiveSearch()">
+            <input type="text" id="playerSearchInput" class="search-box-input" placeholder="🔍 Spieler / Doppel suchen..." oninput="performLiveSearch()">
         </div>
 
         <div id="loadingMessage" style="text-align:center; color:#f59e0b; margin: 20px 0; font-weight: bold;">Lade Daten aller 4 Mannschaften...</div>
@@ -154,26 +185,32 @@
         <div class="team-overview-card" id="teamCard" style="display:none;">
             <div class="card-header-title">
                 <h2>🎯 MANNSCHAFTS-VERGLEICH</h2>
-                <div class="subtitle">GESAMTE MANNSCHAFTSSIEGE, UNENTSCHIEDEN & SCORING-LEISTUNG DER TEAMS</div>
+                <div class="subtitle">GESAMTE SIEGE, UNENTSCHIEDEN & SCORING DER TEAMS</div>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width: 20%;">MANNSCHAFT</th>
-                        <th style="text-align: center; width: 6%;" class="win-text">S</th>
-                        <th style="text-align: center; width: 6%;" class="draw-text">U</th>
-                        <th style="text-align: center; width: 6%;" class="loss-text">N</th>
-                        <th style="text-align: center; width: 9%;">QUOTE</th>
-                        <th style="text-align: center; color: #f59e0b;">180er</th>
-                        <th style="text-align: center; color: #34d399;">SHORT LEGS</th>
-                        <th style="text-align: center;" class="col-60">60+</th>
-                        <th style="text-align: center;" class="col-80">80+</th>
-                        <th style="text-align: center;" class="col-100">100+</th>
-                        <th style="text-align: center;" class="col-140">140+</th>
-                    </tr>
-                </thead>
-                <tbody id="teamTableBody"></tbody>
-            </table>
+            <!-- Responsive Wrapper ermöglicht seitliches Wischen auf Handys -->
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>MANNSCHAFT</th>
+                            <th style="text-align: center;" class="win-text">S</th>
+                            <th style="text-align: center;" class="draw-text">U</th>
+                            <th style="text-align: center;" class="loss-text">N</th>
+                            <th style="text-align: center;">QUOTE</th>
+                            <th style="text-align: center; color: #f59e0b;">180er</th>
+                            <th style="text-align: center; color: #34d399;">
+                                <span class="hide-on-mobile">SHORT LEGS</span>
+                                <span class="show-on-mobile">SL</span>
+                            </th>
+                            <th style="text-align: center;" class="col-60">60+</th>
+                            <th style="text-align: center;" class="col-80">80+</th>
+                            <th style="text-align: center;" class="col-100">100+</th>
+                            <th style="text-align: center;" class="col-140">140+</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teamTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Dashboard Grid (2x2 Kacheln) -->
@@ -184,18 +221,20 @@
                     <h2>🏆 SAISON-HIGHLIGHTS</h2>
                     <div class="subtitle">BESTLEISTUNGEN (EINZEL)</div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%; text-align: center;">#</th>
-                            <th style="width: 44%;">SPIELER</th>
-                            <th style="width: 16%; text-align: center; color: #f59e0b;">180er</th>
-                            <th style="width: 16%; text-align: center; color: #34d399;">SL</th>
-                            <th style="width: 16%; text-align: center; color: #ec4899;">HF</th>
-                        </tr>
-                    </thead>
-                    <tbody id="highlightsTableBody"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">#</th>
+                                <th>SPIELER</th>
+                                <th style="text-align: center; color: #f59e0b;">180er</th>
+                                <th style="text-align: center; color: #34d399;">SL</th>
+                                <th style="text-align: center; color: #ec4899;">HF</th>
+                            </tr>
+                        </thead>
+                        <tbody id="highlightsTableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Scoring Kachel -->
@@ -204,19 +243,21 @@
                     <h2>🎯 SCORING-STATS</h2>
                     <div class="subtitle">HIGH-SCORES (EINZEL)</div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%; text-align: center;">#</th>
-                            <th style="width: 36%;">SPIELER</th>
-                            <th style="width: 14%; text-align: center;" class="col-60">60+</th>
-                            <th style="width: 14%; text-align: center;" class="col-80">80+</th>
-                            <th style="width: 14%; text-align: center;" class="col-100">100+</th>
-                            <th style="width: 14%; text-align: center;" class="col-140">140+</th>
-                        </tr>
-                    </thead>
-                    <tbody id="scoringTableBody"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">#</th>
+                                <th>SPIELER</th>
+                                <th style="text-align: center;" class="col-60">60+</th>
+                                <th style="text-align: center;" class="col-80">80+</th>
+                                <th style="text-align: center;" class="col-100">100+</th>
+                                <th style="text-align: center;" class="col-140">140+</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scoringTableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Einzel-Bilanz Kachel -->
@@ -225,18 +266,20 @@
                     <h2>👤 EINZEL-BILANZ</h2>
                     <div class="subtitle">SIEGE & NIEDERLAGEN (EINZEL)</div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%; text-align: center;">#</th>
-                            <th style="width: 42%;">SPIELER</th>
-                            <th style="width: 15%; text-align: center;" class="win-text">S</th>
-                            <th style="width: 15%; text-align: center;" class="loss-text">N</th>
-                            <th style="width: 20%; text-align: center;">QUOTE</th>
-                        </tr>
-                    </thead>
-                    <tbody id="singleWinLossTableBody"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">#</th>
+                                <th>SPIELER</th>
+                                <th style="text-align: center;" class="win-text">S</th>
+                                <th style="text-align: center;" class="loss-text">N</th>
+                                <th style="text-align: center;">QUOTE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="singleWinLossTableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Doppel-Statistik Kachel -->
@@ -245,18 +288,20 @@
                     <h2>👥 DOPPEL-STATISTIK</h2>
                     <div class="subtitle">ALLE PAARUNGEN (SIEGE, NIEDERLAGEN & QUOTE)</div>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%; text-align: center;">#</th>
-                            <th style="width: 48%;">DOPPEL-PAARUNG</th>
-                            <th style="width: 12%; text-align: center;" class="win-text">S</th>
-                            <th style="width: 12%; text-align: center;" class="loss-text">N</th>
-                            <th style="width: 20%; text-align: center;">QUOTE</th>
-                        </tr>
-                    </thead>
-                    <tbody id="doublePairingTableBody"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">#</th>
+                                <th>DOPPEL-PAARUNG</th>
+                                <th style="text-align: center;" class="win-text">S</th>
+                                <th style="text-align: center;" class="loss-text">N</th>
+                                <th style="text-align: center;">QUOTE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doublePairingTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -336,28 +381,26 @@
 
     function parseAndAggregateTeam(source, csvText, globalPlayers, doublePairings, teamTotals) {
         const rows = parseCSV(csvText).slice(1);
-        
-        // Set zur Nachverfolgung bereits gezählter Mannschafts-Begegnungen
         let countedMatches = new Set();
 
         rows.forEach(row => {
-            const spieltag = row[0] || "";                          // Spalte A: Spieltag
-            const datum = row[1] || "";                             // Spalte B: Datum
-            const gegner = row[2] || "";                            // Spalte C: Gegner Mannschaft
-            const endergebnis = row[3] ? row[3].toString().trim() : ""; // Spalte D: Endergebnis (z.B. 15:5)
+            const spieltag = row[0] || "";                          
+            const datum = row[1] || "";                             
+            const gegner = row[2] || "";                            
+            const endergebnis = row[3] ? row[3].toString().trim() : ""; 
             
-            const spielerKapellen = row[5] || "";                  // Spalte F: Spieler Kapellen
-            const ergebnisSpiel = row[7] ? row[7].toString().trim() : ""; // Spalte H: Ergebnis Spiel (z.B. 3:1)
-            const dartsString = row[9] || "";                      // Spalte J: Darts
-            const hunderteachtzigerRaw = row[11] || "";             // Spalte L: 180er
-            const hfString = row[12] || "";                        // Spalte M: HF
+            const spielerKapellen = row[5] || "";                  
+            const ergebnisSpiel = row[7] ? row[7].toString().trim() : ""; 
+            const dartsString = row[9] || "";                      
+            const hunderteachtzigerRaw = row[11] || "";             
+            const hfString = row[12] || "";                        
 
-            const s60 = parseInt(row[13]) || 0;                     // Spalte N: 60+
-            const s80 = parseInt(row[14]) || 0;                     // Spalte O: 80+
-            const s100 = parseInt(row[15]) || 0;                    // Spalte P: 100+
-            const s140 = parseInt(row[16]) || 0;                    // Spalte Q: 140+
+            const s60 = parseInt(row[13]) || 0;                     
+            const s80 = parseInt(row[14]) || 0;                     
+            const s100 = parseInt(row[15]) || 0;                    
+            const s140 = parseInt(row[16]) || 0;                    
 
-            // 1. MANNSCHAFTS-ERGEBNIS ZÄHLEN (NUR 1-MAL PRO SPIELTAG/BEGEGNUNG)
+            // 1. MANNSCHAFTS-ERGEBNIS ZÄHLEN
             if (endergebnis && endergebnis.includes(":")) {
                 let matchKey = `${spieltag}_${datum}_${gegner}_${endergebnis}`;
                 
@@ -374,7 +417,7 @@
                         } else if (scoreKapellen < scoreGegner) {
                             teamTotals.losses += 1;
                         } else {
-                            teamTotals.draws += 1; // Unentschieden (z. B. 10:10)
+                            teamTotals.draws += 1;
                         }
                     }
                 }
@@ -383,7 +426,7 @@
             if (!spielerKapellen) return;
             let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
 
-            // 2. EINZEL-/DOPPEL-SIEG ODER -NIEDERLAGE BESTIMMEN (aus Spalte H "Ergebnis Spiel")
+            // 2. EINZEL-/DOPPEL-ERGEBNIS
             let isSingleWin = false;
             let isSingleLoss = false;
 
@@ -437,7 +480,6 @@
                     }
                 }
 
-                // High-Scores für das Team aufsummieren
                 teamTotals.s180 += match180Count;
                 teamTotals.shortLegsCount += currentShortLegs.length;
                 teamTotals.s60 += s60;
@@ -445,7 +487,6 @@
                 teamTotals.s100 += s100;
                 teamTotals.s140 += s140;
 
-                // Einzel-Spieler-Statistik
                 let pName = playerList[0];
                 if (!globalPlayers[pName]) {
                     globalPlayers[pName] = {
