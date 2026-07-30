@@ -56,7 +56,7 @@
         .dashboard-grid { grid-template-columns: 1fr; }
     }
 
-    /* Kacheln & Scrollbereiche (Option 1 Integration) */
+    /* Kacheln & Scrollbereiche */
     .premium-card {
         background-color: #1e293b; border: 2px solid #f59e0b; border-radius: 12px;
         padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -110,8 +110,9 @@
     .tag-t3 { background: #ec4899; color: #fff; }
     .tag-t4 { background: #10b981; color: #fff; }
 
-    /* Win/Loss Badges */
+    /* Win/Loss/Draw Badges */
     .win-text { color: #4ade80; font-weight: bold; }
+    .draw-text { color: #facc15; font-weight: bold; }
     .loss-text { color: #f87171; font-weight: bold; }
     .rate-badge { background-color: #334155; color: #facc15; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
 
@@ -153,12 +154,16 @@
         <div class="team-overview-card" id="teamCard" style="display:none;">
             <div class="card-header-title">
                 <h2>🎯 MANNSCHAFTS-VERGLEICH</h2>
-                <div class="subtitle">EINZEL-LEISTUNG DER TEAMS IM ÜBERBLICK</div>
+                <div class="subtitle">GESAMTE MANNSCHAFTSSIEGE, UNENTSCHIEDEN & SCORING-LEISTUNG DER TEAMS</div>
             </div>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">MANNSCHAFT</th>
+                        <th style="width: 20%;">MANNSCHAFT</th>
+                        <th style="text-align: center; width: 6%;" class="win-text">S</th>
+                        <th style="text-align: center; width: 6%;" class="draw-text">U</th>
+                        <th style="text-align: center; width: 6%;" class="loss-text">N</th>
+                        <th style="text-align: center; width: 9%;">QUOTE</th>
                         <th style="text-align: center; color: #f59e0b;">180er</th>
                         <th style="text-align: center; color: #34d399;">SHORT LEGS</th>
                         <th style="text-align: center;" class="col-60">60+</th>
@@ -171,7 +176,7 @@
             </table>
         </div>
 
-        <!-- Dashboard Grid (2x2 Kacheln mit Scrollfunktion) -->
+        <!-- Dashboard Grid (2x2 Kacheln) -->
         <div class="dashboard-grid" id="statsGrid" style="display:none;">
             <!-- Highlights Kachel -->
             <div class="premium-card">
@@ -274,6 +279,7 @@
         TEAM_SOURCES.forEach(t => {
             teamStats[t.name] = {
                 name: t.name, tagClass: t.tagClass,
+                wins: 0, draws: 0, losses: 0,
                 s180: 0, shortLegsCount: 0, s60: 0, s80: 0, s100: 0, s140: 0
             };
         });
@@ -347,28 +353,40 @@
 
             let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
 
-            let wins = 0;
-            let losses = 0;
+            // Auswertung des Spielstandes
+            let scoreKapellen = 0;
+            let scoreGegner = 0;
+            let isWin = false;
+            let isDraw = false;
+            let isLoss = false;
 
             if (ergebnis.includes(":")) {
                 let parts = ergebnis.split(":");
-                let kapellenScore = parseFloat(parts[0].replace(",", "."));
-                let gegnerScore = parseFloat(parts[1].replace(",", "."));
+                scoreKapellen = parseFloat(parts[0].replace(",", "."));
+                scoreGegner = parseFloat(parts[1].replace(",", "."));
                 
-                if (!isNaN(kapellenScore) && !isNaN(gegnerScore)) {
-                    if (kapellenScore > gegnerScore) wins = 1;
-                    else if (gegnerScore > kapellenScore) losses = 1;
+                if (!isNaN(scoreKapellen) && !isNaN(scoreGegner)) {
+                    if (scoreKapellen > scoreGegner) isWin = true;
+                    else if (scoreKapellen < scoreGegner) isLoss = true;
+                    else isDraw = true; // Unentschieden (z. B. 10:10)
                 }
             } else {
                 let ergLower = ergebnis.toLowerCase();
                 if (ergLower === "1" || ergLower === "s" || ergLower.includes("sieg")) {
-                    wins = 1;
+                    isWin = true;
+                } else if (ergLower === "u" || ergLower.includes("unentschieden") || ergLower.includes("remis")) {
+                    isDraw = true;
                 } else if (ergLower === "0" || ergLower === "n" || ergLower.includes("niederlage")) {
-                    losses = 1;
+                    isLoss = true;
                 }
             }
 
-            // DOPPEL-PAARUNGEN (Nur wenn >= 2 Spieler eingetragen sind)
+            // Gesamtergebnis als 1 Mannschafts-Sieg / -Unentschieden / -Niederlage zählen
+            if (isWin) teamTotals.wins += 1;
+            else if (isDraw) teamTotals.draws += 1;
+            else if (isLoss) teamTotals.losses += 1;
+
+            // DOPPEL-PAARUNGEN
             if (playerList.length >= 2) {
                 let pairSorted = [...playerList].sort();
                 let pairKey = pairSorted.join(" / ");
@@ -382,14 +400,13 @@
                         losses: 0
                     };
                 }
-                doublePairings[pairKey].wins += wins;
-                doublePairings[pairKey].losses += losses;
+                if (isWin) doublePairings[pairKey].wins += 1;
+                if (isLoss) doublePairings[pairKey].losses += 1;
                 
-                // Doppel fließen nicht in Einzelkacheln ein
                 return; 
             }
 
-            // EINZEL-SPIELER & MANNSCHAFTS-VERGLEICH
+            // EINZEL-SPIELER & SCORING IM MANNSCHAFTS-VERGLEICH
             if (playerList.length === 1) {
                 let currentShortLegs = [];
                 if (dartsString) {
@@ -409,7 +426,7 @@
                     }
                 }
 
-                // 1. Mannschafts-Vergleich aktualisieren
+                // Scoring-Summen für den Mannschafts-Vergleich
                 teamTotals.s180 += match180Count;
                 teamTotals.shortLegsCount += currentShortLegs.length;
                 teamTotals.s60 += s60;
@@ -417,7 +434,7 @@
                 teamTotals.s100 += s100;
                 teamTotals.s140 += s140;
 
-                // 2. Einzel-Spieler-Statistiken aktualisieren
+                // Einzel-Spieler-Statistiken aktualisieren
                 let pName = playerList[0];
 
                 if (!globalPlayers[pName]) {
@@ -436,8 +453,8 @@
 
                 let pObj = globalPlayers[pName];
 
-                pObj.singleWins += wins;
-                pObj.singleLosses += losses;
+                if (isWin) pObj.singleWins += 1;
+                if (isLoss) pObj.singleLosses += 1;
                 pObj.s60 += s60;
                 pObj.s80 += s80;
                 pObj.s100 += s100;
@@ -461,11 +478,19 @@
         tbody.innerHTML = "";
 
         Object.values(teamStats).forEach(t => {
+            let total = t.wins + t.draws + t.losses;
+            let rate = total > 0 ? Math.round((t.wins / total) * 100) : 0;
+            let rateDisplay = total > 0 ? `<span class="rate-badge">${rate}%</span>` : '<span style="color:#64748b;">—</span>';
+
             tbody.innerHTML += `
                 <tr>
                     <td style="font-weight: bold; color: #ffffff;">
                         ${t.name} <span class="team-tag ${t.tagClass}">STATISTIK</span>
                     </td>
+                    <td style="text-align: center;" class="win-text">${t.wins}</td>
+                    <td style="text-align: center;" class="draw-text">${t.draws}</td>
+                    <td style="text-align: center;" class="loss-text">${t.losses}</td>
+                    <td style="text-align: center;">${rateDisplay}</td>
                     <td style="text-align: center; color: #f59e0b; font-weight: bold;">${t.s180}x</td>
                     <td style="text-align: center; color: #34d399; font-weight: bold;">${t.shortLegsCount}x</td>
                     <td style="text-align: center;" class="col-60">${t.s60}</td>
