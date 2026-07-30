@@ -147,7 +147,7 @@
 
         .filter-select-box, .search-box-input { font-size: 12px; padding: 10px 16px; }
         
-        /* Sichtbare Anzeige bei gekürzten Texten */
+        /* Sichtbare Anzeige bei gekürzten Texten auf Mobilgeräten */
         .hide-on-mobile { display: none; }
         .show-on-mobile { display: inline-block; }
     }
@@ -161,7 +161,7 @@
     <div class="container">
         <!-- Hauptüberschrift -->
         <div class="app-main-header">
-            <h1>TV KAPELLEN 1919 E.V.</h1>
+            <h1>TV KAPELLEN 1919 e.V.</h1>
             <div class="app-subtitle">TV Gesamtstatistik — Alle Mannschaften</div>
             <div class="app-sync-info">⚡ Synchronisiert wird die Seite von Jürgen Schützendorf</div>
         </div>
@@ -330,13 +330,26 @@
         });
 
         try {
-            const fetches = TEAM_SOURCES.map(source => 
-                fetch(source.url)
-                    .then(res => res.text())
-                    .then(csvText => ({ source, csvText }))
-                    .catch(err => ({ source, error: err }))
-            );
+            // Hilfsfunktion mit Timeout & Cache-Buster gegen langes Laden bei Google-Updates
+            const fetchWithTimeout = (source) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // Max. 8 Sek. Wartezeit
+                const cacheBusterUrl = `${source.url}&_t=${Date.now()}`;
 
+                return fetch(cacheBusterUrl, { signal: controller.signal })
+                    .then(res => {
+                        clearTimeout(timeoutId);
+                        return res.text();
+                    })
+                    .then(csvText => ({ source, csvText }))
+                    .catch(err => {
+                        clearTimeout(timeoutId);
+                        console.warn(`Timeout oder Fehler bei ${source.name}:`, err);
+                        return { source, error: err };
+                    });
+            };
+
+            const fetches = TEAM_SOURCES.map(source => fetchWithTimeout(source));
             const results = await Promise.all(fetches);
 
             results.forEach(res => {
