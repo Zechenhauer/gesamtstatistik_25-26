@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Kapellen 1919 e.V. — Gesamtstatistik</title>
+    <style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #0f172a;
+        color: #f8fafc;
+        margin: 0;
+        padding: 20px 15px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    /* Hauptüberschrift App */
+    .app-main-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    .app-main-header h1 {
+        color: #f59e0b;
+        font-size: 28px;
+        font-weight: 900;
+        margin: 0;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
+    }
+    .app-main-header .app-subtitle {
+        color: #94a3b8;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 4px;
+        letter-spacing: 0.5px;
+    }
+    .app-main-header .app-sync-info {
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 500;
+        margin-top: 6px;
+        letter-spacing: 0.3px;
+    }
+
+    /* Suche & Dropdown Filter Header */
+    .search-wrapper {
+        position: sticky; 
+        top: 15px; 
+        z-index: 90; 
+        margin-bottom: 25px; 
+        display: flex; 
+        gap: 15px; 
+        justify-content: center; 
+        flex-wrap: wrap;
+    }
+    .filter-select-box {
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: #1e293b;
+        color: #f59e0b;
+        border: 2px solid #f59e0b;
+        border-radius: 25px;
+        outline: none;
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        cursor: pointer;
+    }
+    .filter-select-box option {
+        background-color: #0f172a;
+        color: #ffffff;
+    }
+    .search-box-input {
+        width: 100%; 
+        max-width: 400px; 
+        padding: 12px 24px; 
+        font-size: 14px;
+        background-color: #1e293b; 
+        color: #ffffff; 
+        border: 2px solid #f59e0b;
+        border-radius: 25px; 
+        outline: none; 
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        text-align: center;
+    }
+
+    /* Grid Layouts (Jetzt 3 Kacheln nebeneinander auf großen Bildschirmen) */
+    .team-overview-card {
+        background-color: #1e293b; 
+        border: 2px solid #f59e0b; 
+        border-radius: 12px;
+        padding: 20px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+        margin-bottom: 25px;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 35px;
+    }
+
+    @media (max-width: 1100px) {
+        .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Kacheln & Tabellen Design */
+    .premium-card {
+        background-color: #1e293b; 
+        border: 2px solid #f59e0b; 
+        border-radius: 12px;
+        padding: 15px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .card-header-title { text-align: center; margin-bottom: 12px; }
+    .card-header-title h2 { color: #f59e0b; margin: 0; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 900; }
+    .card-header-title .subtitle { color: #34d399; font-size: 11px; font-weight: bold; margin-top: 3px; letter-spacing: 0.5px; }
+
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .data-table th { background-color: #334155; color: #94a3b8; text-align: left; padding: 8px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table td { padding: 8px 4px; border-bottom: 1px solid #334155; font-size: 12px; }
+
+    /* Team Badges */
+    .team-tag {
+        font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px;
+        text-transform: uppercase; display: inline-block; margin-left: 4px; vertical-align: middle;
+    }
+    .tag-t1 { background: #3b82f6; color: #fff; }
+    .tag-t2 { background: #8b5cf6; color: #fff; }
+    .tag-t3 { background: #ec4899; color: #fff; }
+    .tag-t4 { background: #10b981; color: #fff; }
+
+    /* Win/Loss Badges */
+    .win-text { color: #4ade80; font-weight: bold; }
+    .loss-text { color: #f87171; font-weight: bold; }
+    .rate-badge {
+        background-color: #334155; color: #facc15; padding: 2px 6px;
+        border-radius: 4px; font-weight: bold; font-size: 11px;
+    }
+
+    /* Farblich gestaltete Spalten für Scoring */
+    .col-60 { color: #f97316 !important; background-color: rgba(249, 115, 22, 0.1); font-weight: bold; }
+    .col-80 { color: #facc15 !important; background-color: rgba(250, 204, 21, 0.1); font-weight: bold; }
+    .col-100 { color: #4ade80 !important; background-color: rgba(74, 222, 128, 0.1); font-weight: bold; }
+    .col-140 { background-color: rgba(56, 189, 248, 0.1); font-weight: bold; }
+
+    .badge-140 {
+        background-color: #0284c7; color: #ffffff; padding: 2px 8px;
+        border-radius: 4px; font-weight: bold; display: inline-block;
+        box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+    }
+
+    .row-matched { background-color: rgba(245, 158, 11, 0.2) !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hauptüberschrift -->
+        <div class="app-main-header">
+            <h1>TV KAPELLEN 1919 E.V.</h1>
+            <div class="app-subtitle">TV Gesamtstatistik — Alle Mannschaften</div>
+            <div class="app-sync-info">⚡ Synchronisiert wird die Seite von Jürgen Schützendorf</div>
+        </div>
+
+        <!-- Live Suche & Team Filter -->
+        <div class="search-wrapper">
+            <select id="teamFilterSelect" class="filter-select-box" onchange="performLiveSearch()">
+                <option value="ALL">🎯 Alle Mannschaften</option>
+                <option value="TVK 1">TV Kapellen 1</option>
+                <option value="TVK 2">TV Kapellen 2</option>
+                <option value="TVK 3">TV Kapellen 3</option>
+                <option value="TVK 4">TV Kapellen 4</option>
+            </select>
+
+            <input type="text" id="playerSearchInput" class="search-box-input" placeholder="🔍 Nach Spieler-Name suchen..." oninput="performLiveSearch()">
+        </div>
+
+        <div id="loadingMessage" style="text-align:center; color:#f59e0b; margin: 20px 0; font-weight: bold;">Lade Daten aller 4 Mannschaften...</div>
+
+        <!-- Team Vergleich Kachel -->
+        <div class="team-overview-card" id="teamCard" style="display:none;">
+            <div class="card-header-title">
+                <h2>🎯 MANNSCHAFTS-VERGLEICH</h2>
+                <div class="subtitle">GESAMT-LEISTUNG DER TEAMS IM ÜBERBLICK</div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">MANNSCHAFT</th>
+                        <th style="text-align: center; color: #f59e0b;">180er</th>
+                        <th style="text-align: center; color: #34d399;">SHORT LEGS</th>
+                        <th style="text-align: center;" class="col-60">60+</th>
+                        <th style="text-align: center;" class="col-80">80+</th>
+                        <th style="text-align: center;" class="col-100">100+</th>
+                        <th style="text-align: center;" class="col-140">140+</th>
+                    </tr>
+                </thead>
+                <tbody id="teamTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Dashboard Grid (3 Side-by-Side Kacheln) -->
+        <div class="dashboard-grid" id="statsGrid" style="display:none;">
+            <!-- Highlights Kachel -->
+            <div class="premium-card">
+                <div class="card-header-title">
+                    <h2>🏆 SAISON-HIGHLIGHTS</h2>
+                    <div class="subtitle">BESTLEISTUNGEN</div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%; text-align: center;">#</th>
+                            <th style="width: 44%;">SPIELER</th>
+                            <th style="width: 16%; text-align: center; color: #f59e0b;">180er</th>
+                            <th style="width: 16%; text-align: center; color: #34d399;">SL</th>
+                            <th style="width: 16%; text-align: center; color: #ec4899;">HF</th>
+                        </tr>
+                    </thead>
+                    <tbody id="highlightsTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- NEU: Siege & Niederlagen Kachel -->
+            <div class="premium-card">
+                <div class="card-header-title">
+                    <h2>⚔️ SPIELER-BILANZ</h2>
+                    <div class="subtitle">SIEGE & NIEDERLAGEN</div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%; text-align: center;">#</th>
+                            <th style="width: 42%;">SPIELER</th>
+                            <th style="width: 15%; text-align: center;" class="win-text">S</th>
+                            <th style="width: 15%; text-align: center;" class="loss-text">N</th>
+                            <th style="width: 20%; text-align: center;">QUOTE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="winLossTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Scoring Kachel -->
+            <div class="premium-card">
+                <div class="card-header-title">
+                    <h2>🎯 SCORING-STATS</h2>
+                    <div class="subtitle">HIGH-SCORES</div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%; text-align: center;">#</th>
+                            <th style="width: 36%;">SPIELER</th>
+                            <th style="width: 14%; text-align: center;" class="col-60">60+</th>
+                            <th style="width: 14%; text-align: center;" class="col-80">80+</th>
+                            <th style="width: 14%; text-align: center;" class="col-100">100+</th>
+                            <th style="width: 14%; text-align: center;" class="col-140">140+</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoringTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // DEINE GOOGLE SHEETS DATENQUELLEN
+    const TEAM_SOURCES = [
+        { name: "TV Kapellen 1", tagClass: "tag-t1", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdTOUA5sqMlTVxxUZWLn-ce3HNDvCbLfmLZIgT7EKJ0tYAT3OqZhx3T_BMvpgIwU5tDUxmjvUIRbHz/pub?gid=2097702849&single=true&output=csv" },
+        { name: "TV Kapellen 2", tagClass: "tag-t2", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdTOUA5sqMlTVxxUZWLn-ce3HNDvCbLfmLZIgT7EKJ0tYAT3OqZhx3T_BMvpgIwU5tDUxmjvUIRbHz/pub?gid=483923517&single=true&output=csv" },
+        { name: "TV Kapellen 3", tagClass: "tag-t3", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdTOUA5sqMlTVxxUZWLn-ce3HNDvCbLfmLZIgT7EKJ0tYAT3OqZhx3T_BMvpgIwU5tDUxmjvUIRbHz/pub?gid=0&single=true&output=csv" },
+        { name: "TV Kapellen 4", tagClass: "tag-t4", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdTOUA5sqMlTVxxUZWLn-ce3HNDvCbLfmLZIgT7EKJ0tYAT3OqZhx3T_BMvpgIwU5tDUxmjvUIRbHz/pub?gid=1132963048&single=true&output=csv" }
+    ];
+
+    document.addEventListener("DOMContentLoaded", fetchAllTeamsData);
+
+    async function fetchAllTeamsData() {
+        let globalPlayers = {};
+        let teamStats = {};
+
+        TEAM_SOURCES.forEach(t => {
+            teamStats[t.name] = {
+                name: t.name,
+                tagClass: t.tagClass,
+                s180: 0, shortLegsCount: 0, s60: 0, s80: 0, s100: 0, s140: 0
+            };
+        });
+
+        try {
+            const fetches = TEAM_SOURCES.map(source => 
+                fetch(source.url)
+                    .then(res => res.text())
+                    .then(csvText => ({ source, csvText }))
+                    .catch(err => ({ source, error: err }))
+            );
+
+            const results = await Promise.all(fetches);
+
+            results.forEach(res => {
+                if (res.csvText && !res.csvText.toLowerCase().includes("<!doctype html>")) {
+                    parseAndAggregateTeam(res.source, res.csvText, globalPlayers, teamStats[res.source.name]);
+                }
+            });
+
+            renderTeamOverviewTable(teamStats);
+            renderHighlightsTable(globalPlayers);
+            renderWinLossTable(globalPlayers);
+            renderScoringTable(globalPlayers);
+
+            document.getElementById("loadingMessage").style.display = "none";
+            document.getElementById("teamCard").style.display = "block";
+            document.getElementById("statsGrid").style.display = "grid";
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById("loadingMessage").innerText = "⚠️ Fehler beim Laden der Daten.";
+        }
+    }
+
+    function parseCSV(text) {
+        let lines = text.split(/\r?\n/);
+        if (lines.length === 0) return [];
+        let delimiter = lines[0].includes(";") ? ";" : ",";
+
+        return lines.map(line => {
+            let result = [], current = '', inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                let char = line[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === delimiter && !inQuotes) { result.push(current.trim()); current = ''; }
+                else current += char;
+            }
+            result.push(current.trim());
+            return result;
+        }).filter(r => r.length > 1 && r[0] !== "");
+    }
+
+    function parseAndAggregateTeam(source, csvText, globalPlayers, teamTotals) {
+        const rows = parseCSV(csvText).slice(1);
+
+        rows.forEach(row => {
+            const spielerKapellen = row[5] || "";
+            const ergebnis = row[8] || ""; // Liest Ergebnisse aus (z.B. "3:1", "1:3" oder "1", "0")
+            const dartsString = row[9] || "";
+            const hunderteachtzigerRaw = row[11] || "";
+            const hfString = row[12] || "";
+
+            const s60 = parseInt(row[13]) || 0;
+            const s80 = parseInt(row[14]) || 0;
+            const s100 = parseInt(row[15]) || 0;
+            const s140 = parseInt(row[16]) || 0;
+
+            if (!spielerKapellen) return;
+
+            // Auswertung Sieg/Niederlage
+            let wins = 0;
+            let losses = 0;
+            if (ergebnis.includes(":")) {
+                let parts = ergebnis.split(":");
+                let kapellenScore = parseInt(parts[0]);
+                let gegnerScore = parseInt(parts[1]);
+                if (!isNaN(kapellenScore) && !isNaN(gegnerScore)) {
+                    if (kapellenScore > gegnerScore) wins = 1;
+                    else if (gegnerScore > kapellenScore) losses = 1;
+                }
+            } else if (ergebnis === "1" || ergebnis.toLowerCase() === "s") {
+                wins = 1;
+            } else if (ergebnis === "0" || ergebnis.toLowerCase() === "n") {
+                losses = 1;
+            }
+
+            let currentShortLegs = [];
+            if (dartsString) {
+                dartsString.split(/[,|\/-]/).forEach(d => {
+                    let dNum = parseInt(d.trim());
+                    if (dNum && dNum <= 18) {
+                        currentShortLegs.push(dNum);
+                    }
+                });
+            }
+
+            let match180Count = 0;
+            if (hunderteachtzigerRaw.trim() !== "") {
+                let matchesNumbers = hunderteachtzigerRaw.match(/\d+/g);
+                if (matchesNumbers) {
+                    match180Count = matchesNumbers.reduce((acc, curr) => acc + parseInt(curr), 0);
+                } else {
+                    match180Count = hunderteachtzigerRaw.split(/[,|\/]/).filter(s => s.trim().length > 0).length;
+                }
+            }
+
+            teamTotals.s180 += match180Count;
+            teamTotals.shortLegsCount += currentShortLegs.length;
+            teamTotals.s60 += s60;
+            teamTotals.s80 += s80;
+            teamTotals.s100 += s100;
+            teamTotals.s140 += s140;
+
+            let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
+
+            playerList.forEach(pName => {
+                if (!globalPlayers[pName]) {
+                    globalPlayers[pName] = {
+                        name: pName,
+                        teamTag: source.name.replace("TV Kapellen ", "TVK "),
+                        tagClass: source.tagClass,
+                        hunderteachtziger: 0,
+                        shortLegsArray: [],
+                        topFinish: 0,
+                        wins: 0,
+                        losses: 0,
+                        s60: 0, s80: 0, s100: 0, s140: 0
+                    };
+                }
+
+                let pObj = globalPlayers[pName];
+                pObj.wins += wins;
+                pObj.losses += losses;
+                pObj.s60 += s60;
+                pObj.s80 += s80;
+                pObj.s100 += s100;
+                pObj.s140 += s140;
+                pObj.shortLegsArray.push(...currentShortLegs);
+
+                if (hfString) {
+                    hfString.split(",").forEach(f => {
+                        let fNum = parseInt(f.trim());
+                        if (fNum && fNum > pObj.topFinish) pObj.topFinish = fNum;
+                    });
+                }
+
+                if (hunderteachtzigerRaw) {
+                    if (playerList.length > 1) {
+                        let pLast = pName.split(" ").pop().toLowerCase();
+                        if (hunderteachtzigerRaw.toLowerCase().includes(pLast)) {
+                            let mNum = hunderteachtzigerRaw.match(new RegExp(pLast + "\\s*(\\d+)", "i"));
+                            pObj.hunderteachtziger += mNum ? parseInt(mNum[1]) : 1;
+                        } else if (!isNaN(parseInt(hunderteachtzigerRaw))) {
+                            pObj.hunderteachtziger += parseInt(hunderteachtzigerRaw);
+                        }
+                    } else {
+                        pObj.hunderteachtziger += match180Count;
+                    }
+                }
+            });
+        });
+    }
+
+    function renderTeamOverviewTable(teamStats) {
+        let tbody = document.getElementById("teamTableBody");
+        tbody.innerHTML = "";
+
+        Object.values(teamStats).forEach(t => {
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight: bold; color: #ffffff;">
+                        ${t.name} <span class="team-tag ${t.tagClass}">STATISTIK</span>
+                    </td>
+                    <td style="text-align: center; color: #f59e0b; font-weight: bold;">${t.s180}x</td>
+                    <td style="text-align: center; color: #34d399; font-weight: bold;">${t.shortLegsCount}x</td>
+                    <td style="text-align: center;" class="col-60">${t.s60}</td>
+                    <td style="text-align: center;" class="col-80">${t.s80}</td>
+                    <td style="text-align: center;" class="col-100">${t.s100}</td>
+                    <td style="text-align: center;" class="col-140">${t.s140 > 0 ? '<span class="badge-140">'+t.s140+'</span>' : '—'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderHighlightsTable(players) {
+        let sorted = Object.values(players).sort((a, b) => 
+            b.hunderteachtziger - a.hunderteachtziger || 
+            b.shortLegsArray.length - a.shortLegsArray.length || 
+            b.topFinish - a.topFinish
+        );
+
+        let tbody = document.getElementById("highlightsTableBody");
+        tbody.innerHTML = "";
+
+        sorted.forEach((p, idx) => {
+            let topFinishDisplay = p.topFinish > 0 
+                ? `<span style="background:#ec4899; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold;">${p.topFinish}</span>` 
+                : '<span style="color:#64748b;">—</span>';
+
+            let shortLegsDisplay = '<span style="color:#64748b;">—</span>';
+            if (p.shortLegsArray.length > 0) {
+                let sortedSL = [...p.shortLegsArray].sort((a, b) => a - b);
+                shortLegsDisplay = `<span style="color:#34d399; font-weight:bold;">${sortedSL.join(", ")}</span>`;
+            }
+
+            tbody.innerHTML += `
+                <tr class="hl-player-row" data-player-name="${p.name.toLowerCase()}" data-player-team="${p.teamTag}">
+                    <td style="text-align: center; font-weight: bold; color: #f59e0b;">${idx + 1}</td>
+                    <td style="font-weight: bold; color: #ffffff;">
+                        ${p.name} <span class="team-tag ${p.tagClass}">${p.teamTag}</span>
+                    </td>
+                    <td style="text-align: center; color: #f59e0b; font-weight: bold;">${p.hunderteachtziger}x</td>
+                    <td style="text-align: center;">${shortLegsDisplay}</td>
+                    <td style="text-align: center;">${topFinishDisplay}</td>
+                </tr>
+            `;
+        });
+    }
+
+    /* NEU: Rendert die Siege/Niederlagen Tabelle */
+    function renderWinLossTable(players) {
+        let sorted = Object.values(players).map(p => {
+            let total = p.wins + p.losses;
+            let rate = total > 0 ? Math.round((p.wins / total) * 100) : 0;
+            return { ...p, totalMatches: total, winRate: rate };
+        }).sort((a, b) => b.wins - a.wins || b.winRate - a.winRate || a.losses - b.losses);
+
+        let tbody = document.getElementById("winLossTableBody");
+        tbody.innerHTML = "";
+
+        sorted.forEach((p, idx) => {
+            let rateDisplay = p.totalMatches > 0 
+                ? `<span class="rate-badge">${p.winRate}%</span>` 
+                : '<span style="color:#64748b;">—</span>';
+
+            tbody.innerHTML += `
+                <tr class="hl-player-row" data-player-name="${p.name.toLowerCase()}" data-player-team="${p.teamTag}">
+                    <td style="text-align: center; font-weight: bold; color: #f59e0b;">${idx + 1}</td>
+                    <td style="font-weight: bold; color: #ffffff;">
+                        ${p.name} <span class="team-tag ${p.tagClass}">${p.teamTag}</span>
+                    </td>
+                    <td style="text-align: center;" class="win-text">${p.wins}</td>
+                    <td style="text-align: center;" class="loss-text">${p.losses}</td>
+                    <td style="text-align: center;">${rateDisplay}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderScoringTable(players) {
+        let sorted = Object.values(players).map(p => ({
+            ...p,
+            totalScoring: p.s60 + p.s80 + p.s100 + p.s140
+        })).sort((a, b) => b.totalScoring - a.totalScoring || b.s140 - a.s140);
+
+        let tbody = document.getElementById("scoringTableBody");
+        tbody.innerHTML = "";
+
+        sorted.forEach((p, idx) => {
+            let display140 = p.s140 > 0 
+                ? `<span class="badge-140">${p.s140}</span>` 
+                : '<span style="color:#64748b;">—</span>';
+
+            tbody.innerHTML += `
+                <tr class="hl-player-row" data-player-name="${p.name.toLowerCase()}" data-player-team="${p.teamTag}">
+                    <td style="text-align: center; font-weight: bold; color: #f59e0b;">${idx + 1}</td>
+                    <td style="font-weight: bold; color: #ffffff;">
+                        ${p.name} <span class="team-tag ${p.tagClass}">${p.teamTag}</span>
+                    </td>
+                    <td style="text-align: center;" class="col-60">${p.s60}</td>
+                    <td style="text-align: center;" class="col-80">${p.s80}</td>
+                    <td style="text-align: center;" class="col-100">${p.s100}</td>
+                    <td style="text-align: center;" class="col-140">${display140}</td>
+                </tr>
+            `;
+        });
+    }
+
+    /* Live Search & Mannschafts-Filter Funktion */
+    function performLiveSearch() {
+        const nameQuery = document.getElementById('playerSearchInput').value.toLowerCase().trim();
+        const selectedTeam = document.getElementById('teamFilterSelect').value;
+
+        document.querySelectorAll('.hl-player-row').forEach(row => {
+            const playerName = row.getAttribute('data-player-name') || '';
+            const playerTeam = row.getAttribute('data-player-team') || '';
+
+            const matchesName = nameQuery === '' || playerName.includes(nameQuery);
+            const matchesTeam = selectedTeam === 'ALL' || playerTeam === selectedTeam;
+
+            if (matchesName && matchesTeam) {
+                row.style.display = ''; // Zeile einblenden
+                if (nameQuery !== '') {
+                    row.classList.add('row-matched');
+                } else {
+                    row.classList.remove('row-matched');
+                }
+            } else {
+                row.style.display = 'none'; // Zeile ausblenden
+            }
+        });
+    }
+    </script>
+</body>
+</html>
