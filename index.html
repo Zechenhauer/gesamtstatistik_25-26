@@ -56,17 +56,48 @@
         .dashboard-grid { grid-template-columns: 1fr; }
     }
 
-    /* Kacheln & Tabellen Design */
+    /* Kacheln & Scrollbereiche (Option 1 Integration) */
     .premium-card {
         background-color: #1e293b; border: 2px solid #f59e0b; border-radius: 12px;
         padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        max-height: 480px;
+        overflow-y: auto;
+        position: relative;
     }
+
+    /* Fixierter Tabellenkopf beim Scrollen */
+    .data-table th { 
+        position: sticky;
+        top: 0;
+        background-color: #1e293b;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        color: #94a3b8; 
+        text-align: left; 
+        padding: 10px 4px; 
+        font-size: 10px; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+    }
+
+    /* Design des Scrollbalkens */
+    .premium-card::-webkit-scrollbar {
+        width: 6px;
+    }
+    .premium-card::-webkit-scrollbar-track {
+        background: #0f172a;
+        border-radius: 4px;
+    }
+    .premium-card::-webkit-scrollbar-thumb {
+        background: #f59e0b;
+        border-radius: 4px;
+    }
+
     .card-header-title { text-align: center; margin-bottom: 12px; }
     .card-header-title h2 { color: #f59e0b; margin: 0; font-size: 16px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 900; }
     .card-header-title .subtitle { color: #34d399; font-size: 11px; font-weight: bold; margin-top: 3px; letter-spacing: 0.5px; }
 
-    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .data-table th { background-color: #334155; color: #94a3b8; text-align: left; padding: 8px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
     .data-table td { padding: 8px 4px; border-bottom: 1px solid #334155; font-size: 12px; }
 
     /* Team Badges */
@@ -140,7 +171,7 @@
             </table>
         </div>
 
-        <!-- Dashboard Grid (2x2 Kacheln) -->
+        <!-- Dashboard Grid (2x2 Kacheln mit Scrollfunktion) -->
         <div class="dashboard-grid" id="statsGrid" style="display:none;">
             <!-- Highlights Kachel -->
             <div class="premium-card">
@@ -302,7 +333,7 @@
 
         rows.forEach(row => {
             const spielerKapellen = row[5] || "";                     // Spalte F: Spieler
-            const ergebnis = row[7] ? row[7].toString().trim() : "";     // Spalte H: Ergebnis Spiel
+            const ergebnis = row[7] ? row[7].toString().trim() : "";     // Spalte H: Ergebnis
             const dartsString = row[9] || "";                        // Spalte J: Darts
             const hunderteachtzigerRaw = row[11] || "";               // Spalte L: 180er
             const hfString = row[12] || "";                          // Spalte M: High Finish
@@ -354,11 +385,11 @@
                 doublePairings[pairKey].wins += wins;
                 doublePairings[pairKey].losses += losses;
                 
-                // STRIKTER ABBRUCH: Doppel fließen WEDER in den Mannschafts-Vergleich NOCH in Einzel-Kacheln ein!
+                // Doppel fließen nicht in Einzelkacheln ein
                 return; 
             }
 
-            // EINZEL-SPIELER & MANNSCHAFTS-VERGLEICH (Nur für echte Einzelmatches)
+            // EINZEL-SPIELER & MANNSCHAFTS-VERGLEICH
             if (playerList.length === 1) {
                 let currentShortLegs = [];
                 if (dartsString) {
@@ -378,7 +409,7 @@
                     }
                 }
 
-                // 1. Mannschafts-Vergleich aktualisieren (nur Einzel)
+                // 1. Mannschafts-Vergleich aktualisieren
                 teamTotals.s180 += match180Count;
                 teamTotals.shortLegsCount += currentShortLegs.length;
                 teamTotals.s60 += s60;
@@ -523,7 +554,6 @@
     }
 
     function renderDoublePairingsTable(pairings) {
-        // Sortierung: 1. Anzahl der Spiele (totalMatches), 2. Siege (wins), 3. Gewinnquote (winRate)
         let sorted = Object.values(pairings).map(p => {
             let total = p.wins + p.losses;
             let rate = total > 0 ? Math.round((p.wins / total) * 100) : 0;
