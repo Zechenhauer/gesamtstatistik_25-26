@@ -744,50 +744,22 @@
         });
     }
 
-    // 1. Schritt: Zeige alle absolvierten Spiele dieses Doppels zur Auswahl
+    // Beim Klick auf das Doppel öffnet sich DIREKT die Detailkarte des ersten (bzw. bei mehreren das erste Spiel oder eine Übersicht der Match-Karten)
+    // Da du direkt die zweite Detailkarte sehen willst: Wenn ein Doppel angeklickt wird, öffnen wir direkt die Detailkarte für das Spiel (bei mehreren Spielen standardmäßig das erste oder eine kompakte Ansicht der echten Match-Karte). 
     function openDoubleMatchesList(pairName) {
+        const pairData = globalPairingsData[pairName];
+        if (!pairData || !pairData.matchesDetail || pairData.matchesDetail.length === 0) return;
+
+        // Wenn es genau 1 Spiel gibt oder standardmäßig das erste Spiel: direkt die echte Detailkarte anzeigen!
+        // Wenn es mehrere Spiele sind, öffnen wir direkt das erste Spiel als Original-Detailkarte:
+        openSingleMatchDetailModal(pairName, 0);
+    }
+
+    function openSingleMatchDetailModal(pairName, matchIndex) {
         const modal = document.getElementById('doubleModal');
         const body = document.getElementById('modalDoubleBody');
         const pairData = globalPairingsData[pairName];
-
-        if (!pairData || !pairData.matchesDetail || pairData.matchesDetail.length === 0) {
-            body.innerHTML = `<h2 class="modal-header-title">${pairName}</h2><p style="color:#f87171;">Keine Partien gefunden.</p>`;
-            modal.style.display = 'flex';
-            return;
-        }
-
-        let html = `
-            <h2 class="modal-header-title">${pairName}</h2>
-            <div class="modal-subtitle">WÄHLE EIN SPIEL AUS FÜR DIE DETAILLIERTE ANSICHT</div>
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
-        `;
-
-        pairData.matchesDetail.forEach((m, idx) => {
-            let isWin = m.ergebnis.includes(":") && parseInt(m.ergebnis.split(":")[0]) > parseInt(m.ergebnis.split(":")[1]);
-            let resColor = isWin ? "#4ade80" : "#f87171";
-
-            html += `
-                <div onclick="openSingleMatchDetailModal('${pairName}', ${idx})" style="background-color: #0f172a; padding: 12px; border-radius: 8px; border-left: 4px solid ${resColor}; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #334155;">
-                    <div>
-                        <div style="font-weight: bold; color: #f8fafc; font-size: 13px;">${m.spieltag} <span style="color: #94a3b8; font-weight: normal; font-size: 11px;">(${m.datum})</span></div>
-                        <div style="color: #94a3b8; font-size: 11px; margin-top: 3px;">Gegner: <strong style="color: #f87171;">${m.gegner}</strong></div>
-                    </div>
-                    <div style="background: #1e293b; padding: 6px 12px; border-radius: 6px; font-weight: bold; color: ${resColor}; font-size: 14px; border: 1px solid #334155;">
-                        ${m.ergebnis} ➔
-                    </div>
-                </div>
-            `;
-        });
-
-        html += `</div>`;
-        body.innerHTML = html;
-        modal.style.display = 'flex';
-    }
-
-    // 2. Schritt: Zeige exakt die Detailkarte der Team-App für dieses spezifische Match
-    function openSingleMatchDetailModal(pairName, matchIndex) {
-        const body = document.getElementById('modalDoubleBody');
-        const match = globalPairingsData[pairName].matchesDetail[matchIndex];
+        const match = pairData.matchesDetail[matchIndex];
 
         let legsHtml = '';
         if (match.legs && match.legs.length > 0) {
@@ -798,7 +770,23 @@
             legsHtml = `<tr><td colspan="2" style="text-align:center; color:#64748b;">Keine Leg-Daten vorhanden</td></tr>`;
         }
 
+        // Falls das Doppel in mehreren Spielen angetreten ist, bauen wir oben einen kleinen Hinweistner / Wechsel ein, falls man zum nächsten Spiel blättern möchte
+        let switcherHtml = '';
+        if (pairData.matchesDetail.length > 1) {
+            switcherHtml = `<div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:8px 12px; border-radius:6px; margin-bottom:12px; border:1px solid #334155; font-size:11px;">
+                <span style="color:#94a3b8;">Spiel ${matchIndex + 1} von ${pairData.matchesDetail.length}</span>
+                <div>`;
+            if (matchIndex > 0) {
+                switcherHtml += `<button onclick="openSingleMatchDetailModal('${pairName}', ${matchIndex - 1})" style="background:#334155; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:5px;">◀ Vorheriges</button>`;
+            }
+            if (matchIndex < pairData.matchesDetail.length - 1) {
+                switcherHtml += `<button onclick="openSingleMatchDetailModal('${pairName}', ${matchIndex + 1})" style="background:#334155; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Nächstes ▶</button>`;
+            }
+            switcherHtml += `</div></div>`;
+        }
+
         body.innerHTML = `
+            ${switcherHtml}
             <h2 class="modal-header-title" style="font-size: 16px; margin-bottom: 2px;">${pairName} vs. ${match.gegner}</h2>
             <div class="modal-subtitle">${match.spieltag} (${match.datum})</div>
 
@@ -853,11 +841,9 @@
                 <div>🔥 <strong>High Finish:</strong> ${match.hf !== '—' && match.hf !== '' ? match.hf : '—'}</div>
                 <div>⚡ <strong>Short Legs (≤18 Darts):</strong> —</div>
             </div>
-
-            <div style="margin-top: 20px; text-align: center;">
-                <button onclick="openDoubleMatchesList('${pairName}')" style="background: #334155; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;">⬅ Zurück zur Übersicht</button>
-            </div>
         `;
+
+        modal.style.display = 'flex';
     }
 
     function closeDoubleModal() {
