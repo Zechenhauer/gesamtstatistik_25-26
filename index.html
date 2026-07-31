@@ -56,7 +56,6 @@
         padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 25px;
     }
 
-    /* Tabelle in der Team-Card horizontal scrollbar auf Handy */
     .table-responsive {
         width: 100%;
         overflow-x: auto;
@@ -67,7 +66,6 @@
         display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 35px;
     }
 
-    /* Kacheln & Scrollbereiche */
     .premium-card {
         background-color: #1e293b; border: 2px solid #f59e0b; border-radius: 12px;
         padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -76,7 +74,6 @@
         position: relative;
     }
 
-    /* Fixierter Tabellenkopf beim Scrollen */
     .data-table th { 
         position: sticky;
         top: 0;
@@ -92,7 +89,6 @@
         white-space: nowrap;
     }
 
-    /* Design der Scrollbalken */
     .premium-card::-webkit-scrollbar, .table-responsive::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -113,7 +109,6 @@
     .data-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
     .data-table td { padding: 8px 6px; border-bottom: 1px solid #334155; font-size: 12px; white-space: nowrap; }
 
-    /* Team Badges */
     .team-tag {
         font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px;
         text-transform: uppercase; display: inline-block; margin-left: 4px; vertical-align: middle;
@@ -123,13 +118,11 @@
     .tag-t3 { background: #ffea00; color: #000000; }
     .tag-t4 { background: #10b981; color: #fff; }
 
-    /* Win/Loss/Draw Badges */
     .win-text { color: #4ade80; font-weight: bold; }
     .draw-text { color: #facc15; font-weight: bold; }
     .loss-text { color: #f87171; font-weight: bold; }
     .rate-badge { background-color: #334155; color: #facc15; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
 
-    /* Farblich gestaltete Spalten für Scoring */
     .col-60 { color: #f97316 !important; background-color: rgba(249, 115, 22, 0.1); font-weight: bold; }
     .col-80 { color: #facc15 !important; background-color: rgba(250, 204, 21, 0.1); font-weight: bold; }
     .col-100 { color: #4ade80 !important; background-color: rgba(74, 222, 128, 0.1); font-weight: bold; }
@@ -138,24 +131,54 @@
     .badge-140 { background-color: #0284c7; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
     .row-matched { background-color: rgba(245, 158, 11, 0.2) !important; }
 
-    /* OPTIMIERUNG FÜR SMARTPHONES / MOBILGERÄTE */
+    /* Modal-Fenster (im Look & Feel der Team-Apps) */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        padding: 10px;
+    }
+    .modal-content {
+        background-color: #1e293b;
+        color: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        border: 2px solid #f59e0b;
+        position: relative;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .modal-close {
+        position: absolute;
+        top: 15px; right: 20px;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: #94a3b8;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .modal-close:hover { color: #f59e0b; }
+    .modal-header-title { color: #f59e0b; margin: 0 0 5px 0; font-size: 18px; text-transform: uppercase; font-weight: 900; }
+    .modal-subtitle { color: #34d399; font-size: 12px; font-weight: bold; margin-bottom: 15px; }
+
     @media (max-width: 768px) {
         body { padding: 12px 8px; }
         .app-main-header h1 { font-size: 22px; }
         .app-main-header .app-subtitle { font-size: 12px; }
-        
         .team-overview-card, .premium-card { padding: 12px 8px; }
         .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
-        
         .card-header-title h2 { font-size: 14px; }
         .card-header-title .subtitle { font-size: 10px; }
-
         .data-table th { padding: 6px 4px; font-size: 9px; }
         .data-table td { padding: 6px 4px; font-size: 11px; }
-
         .filter-select-box, .search-box-input { font-size: 12px; padding: 10px 16px; }
-        
-        /* Sichtbare Anzeige bei gekürzten Texten auf Mobilgeräten */
         .hide-on-mobile { display: none; }
         .show-on-mobile { display: inline-block; }
     }
@@ -195,7 +218,6 @@
                 <h2>🎯 MANNSCHAFTS-VERGLEICH</h2>
                 <div class="subtitle">GESAMTE SIEGE, UNENTSCHIEDEN & SCORING DER TEAMS</div>
             </div>
-            <!-- Responsive Wrapper ermöglicht seitliches Wischen auf Handys -->
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
@@ -314,6 +336,18 @@
         </div>
     </div>
 
+    <!-- Modal im gewohnten Team-App Detailkarten-Design -->
+    <div id="doubleModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDoubleModal()">&times;</span>
+            <h2 id="modalDoubleTitle" class="modal-header-title">Doppel-Details</h2>
+            <div id="modalDoubleSubtitle" class="modal-subtitle">DETAILS & SPIELHISTORIE</div>
+            <div id="modalDoubleBody" style="margin-top: 15px; font-size: 13px; color: #cbd5e1;">
+                <!-- Inhalt wird dynamisch befüllt -->
+            </div>
+        </div>
+    </div>
+
     <script>
     const TEAM_SOURCES = [
         { name: "TV Kapellen 1", tagClass: "tag-t1", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdTOUA5sqMlTVxxUZWLn-ce3HNDvCbLfmLZIgT7EKJ0tYAT3OqZhx3T_BMvpgIwU5tDUxmjvUIRbHz/pub?gid=2097702849&single=true&output=csv" },
@@ -338,10 +372,9 @@
         });
 
         try {
-            // Hilfsfunktion mit Timeout & Cache-Buster gegen langes Laden bei Google-Updates
             const fetchWithTimeout = (source) => {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000); // Max. 8 Sek. Wartezeit
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 const cacheBusterUrl = `${source.url}&_t=${Date.now()}`;
 
                 return fetch(cacheBusterUrl, { signal: controller.signal })
@@ -421,7 +454,6 @@
             const s100 = parseInt(row[15]) || 0;                    
             const s140 = parseInt(row[16]) || 0;                    
 
-            // 1. MANNSCHAFTS-ERGEBNIS ZÄHLEN
             if (endergebnis && endergebnis.includes(":")) {
                 let matchKey = `${spieltag}_${datum}_${gegner}_${endergebnis}`;
                 
@@ -447,7 +479,6 @@
             if (!spielerKapellen) return;
             let playerList = spielerKapellen.split("/").map(s => s.trim()).filter(s => s !== "");
 
-            // 2. EINZEL-/DOPPEL-ERGEBNIS
             let isSingleWin = false;
             let isSingleLoss = false;
 
@@ -461,7 +492,7 @@
                 }
             }
 
-            // DOPPEL-PAARUNGEN
+            // DOPPEL-PAARUNGEN erfassen
             if (playerList.length >= 2) {
                 let pairSorted = [...playerList].sort();
                 let pairKey = pairSorted.join(" / ");
@@ -472,11 +503,19 @@
                         teamTag: source.name.replace("TV Kapellen ", "TVK "),
                         tagClass: source.tagClass,
                         wins: 0,
-                        losses: 0
+                        losses: 0,
+                        matchesDetail: []
                     };
                 }
                 if (isSingleWin) doublePairings[pairKey].wins += 1;
                 if (isSingleLoss) doublePairings[pairKey].losses += 1;
+
+                doublePairings[pairKey].matchesDetail.push({
+                    spieltag: spieltag || "Spieltag",
+                    datum: datum || "",
+                    gegner: gegner || "Gegner",
+                    ergebnis: ergebnisSpiel || "—"
+                });
                 
                 return; 
             }
@@ -650,7 +689,10 @@
         });
     }
 
+    let globalPairingsData = {};
+
     function renderDoublePairingsTable(pairings) {
+        globalPairingsData = pairings;
         let sorted = Object.values(pairings).map(p => {
             let total = p.wins + p.losses;
             let rate = total > 0 ? Math.round((p.wins / total) * 100) : 0;
@@ -674,8 +716,9 @@
                 ? `<span class="rate-badge">${p.winRate}%</span>` 
                 : '<span style="color:#64748b;">—</span>';
 
+            // Klickbar gemacht im selben Look & Feel
             tbody.innerHTML += `
-                <tr class="hl-player-row" data-player-name="${p.pairName.toLowerCase()}" data-player-team="${p.teamTag}">
+                <tr class="hl-player-row" data-player-name="${p.pairName.toLowerCase()}" data-player-team="${p.teamTag}" onclick="openDoubleModal('${p.pairName}')" style="cursor: pointer;">
                     <td style="text-align: center; font-weight: bold; color: #f59e0b;">${idx + 1}</td>
                     <td style="font-weight: bold; color: #ffffff;">
                         ${p.pairName} <span class="team-tag ${p.tagClass}">${p.teamTag}</span>
@@ -744,6 +787,79 @@
                 row.style.display = 'none';
             }
         });
+    }
+
+    // Modal-Funktion im gewohnten Detailkarten-Stil
+    function openDoubleModal(pairName) {
+        const modal = document.getElementById('doubleModal');
+        const title = document.getElementById('modalDoubleTitle');
+        const body = document.getElementById('modalDoubleBody');
+        
+        title.innerText = pairName;
+        
+        const pairData = globalPairingsData[pairName];
+        if (!pairData) {
+            body.innerHTML = `<p style="color:#f87171;">Keine Details für dieses Doppel gefunden.</p>`;
+        } else {
+            let total = pairData.wins + pairData.losses;
+            let rate = total > 0 ? Math.round((pairData.wins / total) * 100) : 0;
+            
+            let htmlContent = `
+                <div style="background-color: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #334155;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Gespielte Doppel:</span>
+                        <strong style="color: #f59e0b;">${total}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span>Siege / Niederlagen:</span>
+                        <span><strong class="win-text">${pairData.wins}</strong> / <strong class="loss-text">${pairData.losses}</strong></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Erfolgsquote:</span>
+                        <span class="rate-badge">${rate}%</span>
+                    </div>
+                </div>
+                <div style="font-weight: bold; color: #f59e0b; margin-bottom: 8px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">Einzelne Partien & Ergebnisse:</div>
+            `;
+            
+            if (pairData.matchesDetail && pairData.matchesDetail.length > 0) {
+                htmlContent += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+                pairData.matchesDetail.forEach(m => {
+                    let isWin = m.ergebnis.includes(":") && parseInt(m.ergebnis.split(":")[0]) > parseInt(m.ergebnis.split(":")[1]);
+                    let resColor = isWin ? "#4ade80" : "#f87171";
+                    
+                    htmlContent += `
+                        <div style="background-color: #1a2333; padding: 10px; border-radius: 6px; border-left: 4px solid ${resColor}; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: bold; color: #f8fafc; font-size: 12px;">${m.spieltag} <span style="color: #94a3b8; font-weight: normal; font-size: 11px;">(${m.datum})</span></div>
+                                <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">Gegner: <strong style="color: #f87171;">${m.gegner}</strong></div>
+                            </div>
+                            <div style="background: #0f172a; padding: 4px 10px; border-radius: 4px; font-weight: bold; color: ${resColor}; font-size: 13px; border: 1px solid #334155;">
+                                ${m.ergebnis}
+                            </div>
+                        </div>
+                    `;
+                });
+                htmlContent += `</div>`;
+            } else {
+                htmlContent += `<p style="color:#64748b;">Keine Partien vorhanden.</p>`;
+            }
+            
+            body.innerHTML = htmlContent;
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeDoubleModal() {
+        document.getElementById('doubleModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('doubleModal');
+        if (event.target === modal) {
+            closeDoubleModal();
+        }
     }
     </script>
 </body>
