@@ -16,6 +16,25 @@
     .container { max-width: 1600px; margin: 0 auto; position: relative; }
     
     .app-main-header { text-align: center; margin-bottom: 25px; position: relative; }
+    
+    /* Header-Layout für Logos links und rechts */
+    .app-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 4px;
+    }
+
+    .app-header-logo {
+        height: 45px;
+        max-height: 45px;
+        width: auto;
+        max-width: 50px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+
     .app-main-header h1 {
         color: #f59e0b; font-size: 28px; font-weight: 900; margin: 0;
         letter-spacing: 1px; text-transform: none;
@@ -147,7 +166,8 @@
 
     @media (max-width: 768px) {
         body { padding: 12px 8px; }
-        .app-main-header h1 { font-size: 22px; }
+        .app-main-header h1 { font-size: 20px; }
+        .app-header-logo { height: 35px; max-height: 35px; }
         .team-overview-card, .premium-card { padding: 12px 8px; }
         .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
         .filter-select-box, .search-box-input { font-size: 12px; padding: 10px 16px; }
@@ -166,7 +186,13 @@
     <div class="container">
         <div class="app-main-header">
             <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">🔄 Daten aktualisieren</button>
-            <h1>TV KAPELLEN 1919 e.V.</h1>
+            
+            <div class="app-title-row">
+                <img src="https://lh3.googleusercontent.com/d/1PB4X2QrrMlaRlajQEWDtJxRP2c6VTsI5" alt="TV Kapellen Logo" class="app-header-logo">
+                <h1>TV KAPELLEN 1919 e.V.</h1>
+                <img src="https://lh3.googleusercontent.com/d/1PB4X2QrrMlaRlajQEWDtJxRP2c6VTsI5" alt="TV Kapellen Logo" class="app-header-logo">
+            </div>
+            
             <div class="app-subtitle">TV Gesamtstatistik — Alle Mannschaften</div>
             <div class="app-sync-info">⚡ Datenpflege & Bereitstellung: Jürgen Schützendorf</div>
         </div>
@@ -446,7 +472,7 @@
             const avgString = row[8] ? row[8].toString().trim() : "";
             const dartsString = row[9] || "";                      
             const hunderteachtzigerRaw = row[11] || "";             
-            const hfString = row[12] || "";                        
+            const hfString = row[12] || "";                         
 
             const s60 = parseInt(row[13]) || 0;                     
             const s80 = parseInt(row[14]) || 0;                     
